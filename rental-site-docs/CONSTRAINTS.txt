@@ -1,0 +1,228 @@
+================================================================================
+CONSTRAINTS DOCUMENT
+Furnished Rental Property — Brochure Website & Renter Management System
+================================================================================
+
+1. TECHNICAL CONSTRAINTS
+--------------------------------------------------------------------------------
+
+1.1 Platform: Vercel
+  - Serverless environment: no persistent filesystem
+    → Cannot use SQLite or file-based storage
+    → Must use Vercel Postgres or external database
+  - Serverless function timeout: 10 seconds (hobby), 60 seconds (pro)
+    → Keep API responses fast, no long-running operations
+  - Serverless function size limit: 50MB compressed
+  - Edge function size limit: 4MB
+  - Free tier limits:
+    - 100GB bandwidth/month
+    - 100 hours serverless function execution/month
+    - Vercel Postgres: 256MB storage, 60 compute hours/month
+  - No WebSocket support on serverless
+    → Admin dashboard uses polling or manual refresh, not real-time updates
+
+1.2 Framework: Next.js 14 (App Router)
+  - Use App Router (/app directory), NOT Pages Router
+  - Server Components by default — add "use client" only when needed
+  - API routes use Route Handlers (app/api/route.js pattern)
+  - Environment variables:
+    - Public (browser): must be prefixed with NEXT_PUBLIC_
+    - Private (server-only): no prefix needed
+  - Image optimization via next/image component (built-in)
+  - File naming: page.js, layout.js, route.js, loading.js, error.js
+
+1.3 Database: Vercel Postgres
+  - PostgreSQL under the hood (Neon)
+  - Use @vercel/postgres SDK for connection pooling
+  - Connection pooling is mandatory (serverless = new connection per request)
+  - Free tier: 256MB storage, 1 database, 1 compute endpoint
+  - No migrations tool built-in — use raw SQL or add a migration library
+  - Must handle connection limits gracefully (max 100 concurrent)
+
+1.4 Styling: Tailwind CSS
+  - Use Tailwind utility classes, NOT custom CSS files (except minimal global)
+  - Custom colors defined in tailwind.config.js
+  - No CSS-in-JS libraries (styled-components, emotion, etc.)
+  - No UI component library (no Material UI, Chakra, etc.)
+    → Build components from scratch with Tailwind
+  - Exception: Lucide React for icons only
+
+1.5 Map: Leaflet + OpenStreetMap
+  - Leaflet must be loaded client-side only (uses window/document)
+    → Use dynamic import with { ssr: false } in Next.js
+  - No Google Maps API key required
+  - OpenStreetMap tiles are free but have usage policy:
+    - Must include attribution: "© OpenStreetMap contributors"
+    - Heavy usage (>1M tiles/month) needs own tile server
+    - For this site's traffic: free tier is fine
+
+1.6 Browser Support
+  - Modern browsers only: Chrome 90+, Firefox 90+, Safari 15+, Edge 90+
+  - No IE11 support
+  - ES2020+ JavaScript features are acceptable
+  - CSS Grid and Flexbox assumed available
+
+
+2. DESIGN CONSTRAINTS
+--------------------------------------------------------------------------------
+
+2.1 Responsiveness
+  - Must work on screens 360px wide and up
+  - Three breakpoints: mobile (<640px), tablet (640-1023px), desktop (1024px+)
+  - Touch targets: minimum 44x44px on mobile
+  - No horizontal scrolling on any viewport
+
+2.2 Performance
+  - Largest Contentful Paint (LCP): < 2.5 seconds
+  - First Input Delay (FID): < 100ms
+  - Cumulative Layout Shift (CLS): < 0.1
+  - Total page weight (brochure): < 2MB initial load
+  - Images: lazy loaded below the fold, WebP format preferred
+  - Fonts: preloaded, swap display strategy
+
+2.3 Accessibility (WCAG 2.1 AA)
+  - All images have alt text
+  - Form inputs have associated labels
+  - Color is not the only indicator (use icons/text alongside)
+  - Focus indicators visible on all interactive elements
+  - Skip navigation link for screen readers
+  - ARIA labels on dynamic components (accordion, modal)
+  - Minimum color contrast: 4.5:1 for normal text, 3:1 for large text
+
+
+3. SECURITY CONSTRAINTS
+--------------------------------------------------------------------------------
+
+3.1 Authentication
+  - Admin auth is password-only (single user, no username)
+  - Password stored as environment variable (ADMIN_PASSWORD)
+    → NOT hardcoded in source code
+  - Password compared using timing-safe comparison (crypto.timingSafeEqual)
+  - Session token: signed JWT or random token stored in HTTP-only cookie
+  - Cookie settings: HttpOnly, Secure, SameSite=Strict, max-age=86400 (24h)
+  - Rate limiting on login: max 5 attempts per 15 minutes per IP
+  - No password recovery mechanism (owner resets env var in Vercel dashboard)
+
+3.2 Input Handling
+  - All form inputs sanitized server-side before database insertion
+  - Parameterized SQL queries only (never string concatenation)
+  - HTML entities escaped in all rendered user input
+  - Max length enforced on all text fields (server-side)
+  - File upload: NOT supported in V1 (text-only applications)
+
+3.3 API Security
+  - CORS: restricted to same origin (default Next.js behavior)
+  - Rate limiting on POST /api/applications: max 3 submissions per hour per IP
+  - No API keys exposed to the client
+  - All admin endpoints require valid session cookie
+  - CSRF protection: verify Origin/Referer headers on mutations
+
+3.4 Data
+  - No PII stored in logs
+  - Database encrypted at rest (Vercel Postgres default)
+  - HTTPS enforced (Vercel default)
+  - No third-party analytics in V1 (add later with consent banner if needed)
+
+
+4. CONTENT CONSTRAINTS
+--------------------------------------------------------------------------------
+
+4.1 Placeholder Content
+  - All property-specific content marked with [REPLACE: description]
+  - Unit data stored in a single config file (easy to update)
+  - FAQ content stored in a single config file
+  - No lorem ipsum — use realistic but clearly placeholder text
+
+4.2 Images
+  - Owner provides actual photos (1-2 per unit + hero + floor plan)
+  - Until real photos are provided: use neutral gray placeholder with label
+  - Floor plan: owner provides (scanned or drawn)
+  - No stock photos — this is a real property listing
+
+4.3 Legal
+  - Must include Fair Housing Act notice in footer
+  - No discriminatory language in descriptions
+  - Application form cannot ask about: race, religion, national origin,
+    familial status, disability, sex (Fair Housing protected classes)
+  - Terms of use for the application not required in V1 but recommended V2
+
+
+5. SCOPE CONSTRAINTS (V1 BOUNDARIES)
+--------------------------------------------------------------------------------
+
+DO build:
+  ✓ Static brochure with all specified sections
+  ✓ Interactive map with property pin
+  ✓ Application form with validation
+  ✓ Admin dashboard with CRUD operations
+  ✓ Password-based admin authentication
+  ✓ Responsive design for all pages
+  ✓ Placeholder content ready for customization
+
+DO NOT build:
+  ✗ Email notifications (no email service integration)
+  ✗ File/document upload on application
+  ✗ Online payment or deposit collection
+  ✗ E-signature or lease signing
+  ✗ Tenant portal (post-move-in features)
+  ✗ Multi-admin or role-based access
+  ✗ Search engine for properties (single property only)
+  ✗ Booking calendar or scheduling
+  ✗ Chat widget or messaging
+  ✗ Social media integration
+  ✗ Review/testimonial system
+  ✗ Analytics dashboard
+  ✗ Automated email responses
+  ✗ Multi-language support
+  ✗ Dark mode
+
+
+6. INFRASTRUCTURE CONSTRAINTS
+--------------------------------------------------------------------------------
+
+6.1 Hosting
+  - Vercel hobby plan (free)
+  - Single region deployment (auto-selected by Vercel, usually US East)
+  - Custom domain: supported (owner provides and configures DNS)
+  - SSL: automatic via Vercel (Let's Encrypt)
+
+6.2 CI/CD
+  - GitHub repo → Vercel auto-deploys on push to main
+  - Preview deployments on pull requests (Vercel default)
+  - No separate staging environment needed for V1
+
+6.3 Monitoring
+  - Vercel built-in analytics (basic, free tier)
+  - Vercel function logs for debugging
+  - No external monitoring service in V1
+
+6.4 Backup
+  - Vercel Postgres: daily automatic backups (Neon)
+  - Code: GitHub repository
+  - No manual backup procedure needed
+
+
+7. DEVELOPMENT CONSTRAINTS
+--------------------------------------------------------------------------------
+
+7.1 Code Standards
+  - JavaScript (not TypeScript for V1 — keep it simple)
+  - ESLint with Next.js default config
+  - Prettier for formatting
+  - Meaningful component and variable names
+  - Comments on non-obvious logic only
+
+7.2 Dependencies (keep minimal)
+  - next (framework)
+  - react, react-dom (UI)
+  - @vercel/postgres (database)
+  - leaflet, react-leaflet (map)
+  - lucide-react (icons)
+  - jose (JWT for session tokens) OR iron-session (encrypted sessions)
+  - That's it — no other dependencies unless truly necessary
+
+7.3 Configuration
+  - All property data (units, amenities, FAQ) in /lib/config.js
+  - All secrets in environment variables
+  - .env.example committed to repo with placeholder values
+  - .env.local added to .gitignore

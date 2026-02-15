@@ -1,0 +1,564 @@
+================================================================================
+BACKEND STRUCTURE DOCUMENT
+Furnished Rental Property — Renter Management System
+================================================================================
+
+1. ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+
+Runtime:       Vercel Serverless Functions (Node.js 20)
+Framework:     Next.js 14 App Router — Route Handlers
+Database:      Vercel Postgres (Neon PostgreSQL)
+Auth:          Cookie-based sessions with signed tokens
+Deployment:    Vercel (auto-deploy from GitHub)
+
+Request flow:
+  Client → Vercel Edge Network → Serverless Function → Vercel Postgres → Response
+
+All backend code lives in:
+  /app/api/          → Route Handlers (API endpoints)
+  /lib/              → Shared utilities (db, auth, validation)
+  /middleware.js     → Next.js middleware (route protection)
+
+
+2. DATABASE
+--------------------------------------------------------------------------------
+
+2.1 Schema
+
+  Table: applications
+  ┌─────────────────────────────┬──────────────┬─────────────────────────┐
+  │ Column                      │ Type         │ Constraints             │
+  ├─────────────────────────────┼──────────────┼─────────────────────────┤
+  │ id                          │ SERIAL       │ PRIMARY KEY             │
+  │ unit_preference             │ VARCHAR(100) │                         │
+  │ first_name                  │ VARCHAR(100) │ NOT NULL                │
+  │ last_name                   │ VARCHAR(100) │ NOT NULL                │
+  │ email                       │ VARCHAR(255) │ NOT NULL                │
+  │ phone                       │ VARCHAR(20)  │                         │
+  │ move_in_date                │ DATE         │                         │
+  │ lease_length                │ VARCHAR(50)  │                         │
+  │ employer                    │ VARCHAR(200) │                         │
+  │ monthly_income              │ VARCHAR(50)  │                         │
+  │ current_address             │ TEXT         │                         │
+  │ landlord_name               │ VARCHAR(200) │                         │
+  │ landlord_phone              │ VARCHAR(20)  │                         │
+  │ emergency_contact_name      │ VARCHAR(200) │                         │
+  │ emergency_contact_phone     │ VARCHAR(20)  │                         │
+  │ additional_notes            │ TEXT         │                         │
+  │ status                      │ VARCHAR(20)  │ DEFAULT 'new'           │
+  │ created_at                  │ TIMESTAMP    │ DEFAULT NOW()           │
+  └─────────────────────────────┴──────────────┴─────────────────────────┘
+
+  Indexes:
+    - PRIMARY KEY on id (auto)
+    - INDEX on status (for filtered queries)
+    - INDEX on created_at (for sorted queries)
+
+  Valid status values: 'new', 'reviewing', 'approved', 'rejected'
+
+2.2 Connection Setup (/lib/db.js)
+
+  import { sql } from '@vercel/postgres';
+
+  // @vercel/postgres handles connection pooling automatically
+  // Each serverless invocation gets a pooled connection
+
+  // Initialize database (run once on first deploy)
+  export async function initDB() {
+    await sql`
+      CREATE TABLE IF NOT EXISTS applications (
+        id SERIAL PRIMARY KEY,
+        unit_preference VARCHAR(100),
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(20),
+        move_in_date DATE,
+        lease_length VARCHAR(50),
+        employer VARCHAR(200),
+        monthly_income VARCHAR(50),
+        current_address TEXT,
+        landlord_name VARCHAR(200),
+        landlord_phone VARCHAR(20),
+        emergency_contact_name VARCHAR(200),
+        emergency_contact_phone VARCHAR(20),
+        additional_notes TEXT,
+        status VARCHAR(20) DEFAULT 'new',
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
+      CREATE INDEX IF NOT EXISTS idx_applications_created ON applications(created_at);
+    `;
+  }
+
+2.3 Query Functions (/lib/db.js)
+
+  // Create a new application
+  export async function createApplication(data) {
+    const result = await sql`
+      INSERT INTO applications (
+        unit_preference, first_name, last_name, email, phone,
+        move_in_date, lease_length, employer, monthly_income,
+        current_address, landlord_name, landlord_phone,
+        emergency_contact_name, emergency_contact_phone, additional_notes
+      ) VALUES (
+        ${data.unit_preference}, ${data.first_name}, ${data.last_name},
+        ${data.email}, ${data.phone}, ${data.move_in_date},
+        ${data.lease_length}, ${data.employer}, ${data.monthly_income},
+        ${data.current_address}, ${data.landlord_name}, ${data.landlord_phone},
+        ${data.emergency_contact_name}, ${data.emergency_contact_phone},
+        ${data.additional_notes}
+      )
+      RETURNING *;
+    `;
+    return result.rows[0];
+  }
+
+  // Get all applications, optionally filtered by status
+  export async function getApplications(status = null) {
+    if (status) {
+      const result = await sql`
+        SELECT * FROM applications
+        WHERE status = ${status}
+        ORDER BY created_at DESC;
+      `;
+      return result.rows;
+    }
+    const result = await sql`
+      SELECT * FROM applications ORDER BY created_at DESC;
+    `;
+    return result.rows;
+  }
+
+  // Get a single application by ID
+  export async function getApplication(id) {
+    const result = await sql`
+      SELECT * FROM applications WHERE id = ${id};
+    `;
+    return result.rows[0] || null;
+  }
+
+  // Update application status
+  export async function updateApplicationStatus(id, status) {
+    const validStatuses = ['new', 'reviewing', 'approved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      throw new Error('Invalid status');
+    }
+    const result = await sql`
+      UPDATE applications SET status = ${status} WHERE id = ${id} RETURNING *;
+    `;
+    return result.rows[0] || null;
+  }
+
+  // Delete an application
+  export async function deleteApplication(id) {
+    const result = await sql`
+      DELETE FROM applications WHERE id = ${id} RETURNING id;
+    `;
+    return result.rows[0] || null;
+  }
+
+  // Get counts by status (for dashboard badges)
+  export async function getStatusCounts() {
+    const result = await sql`
+      SELECT status, COUNT(*) as count
+      FROM applications
+      GROUP BY status;
+    `;
+    return result.rows;
+  }
+
+
+3. API ROUTES
+--------------------------------------------------------------------------------
+
+3.1 Application Submission (Public)
+
+  File: /app/api/applications/route.js
+
+  POST /api/applications
+    Purpose: Submit a new rental application (public, no auth)
+    Rate limit: 3 requests per hour per IP
+
+    Request body (JSON):
+    {
+      "first_name": "Jane",           // required, max 100 chars
+      "last_name": "Smith",            // required, max 100 chars
+      "email": "jane@example.com",     // required, valid email
+      "phone": "555-123-4567",         // optional, max 20 chars
+      "unit_preference": "Unit A",     // optional, must be valid unit or empty
+      "move_in_date": "2026-04-01",    // optional, must be future date
+      "lease_length": "3 months",      // optional, from allowed list
+      "employer": "City Hospital",     // optional, max 200 chars
+      "monthly_income": "$5-7k",       // optional, from allowed list
+      "current_address": "123 Main St",// optional
+      "landlord_name": "John Doe",     // optional, max 200 chars
+      "landlord_phone": "555-987-6543",// optional, max 20 chars
+      "emergency_contact_name": "...", // optional, max 200 chars
+      "emergency_contact_phone": "...",// optional, max 20 chars
+      "additional_notes": "..."        // optional
+    }
+
+    Response 201:
+    { "success": true, "message": "Application submitted successfully" }
+
+    Response 400:
+    { "error": "Validation failed", "details": { "email": "Invalid email" } }
+
+    Response 429:
+    { "error": "Too many requests. Please try again later." }
+
+    Response 500:
+    { "error": "Internal server error" }
+
+3.2 Applications List (Admin)
+
+  File: /app/api/applications/route.js
+
+  GET /api/applications?status=new
+    Purpose: List all applications (admin only)
+    Auth: session cookie required
+
+    Query params:
+      status (optional): "new" | "reviewing" | "approved" | "rejected"
+
+    Response 200:
+    {
+      "applications": [ { ...application }, ... ],
+      "counts": { "new": 5, "reviewing": 2, "approved": 3, "rejected": 1 }
+    }
+
+    Response 401:
+    { "error": "Unauthorized" }
+
+3.3 Single Application (Admin)
+
+  File: /app/api/applications/[id]/route.js
+
+  GET /api/applications/:id
+    Purpose: Get full application details
+    Auth: session cookie required
+
+    Response 200:
+    { "application": { ...full application data } }
+
+    Response 404:
+    { "error": "Application not found" }
+
+3.4 Update Application Status (Admin)
+
+  File: /app/api/applications/[id]/route.js
+
+  PATCH /api/applications/:id
+    Purpose: Update the status of an application
+    Auth: session cookie required
+
+    Request body:
+    { "status": "reviewing" }
+
+    Response 200:
+    { "application": { ...updated application } }
+
+    Response 400:
+    { "error": "Invalid status. Must be: new, reviewing, approved, rejected" }
+
+3.5 Delete Application (Admin)
+
+  File: /app/api/applications/[id]/route.js
+
+  DELETE /api/applications/:id
+    Purpose: Permanently delete an application
+    Auth: session cookie required
+
+    Response 200:
+    { "success": true }
+
+    Response 404:
+    { "error": "Application not found" }
+
+3.6 Admin Login
+
+  File: /app/api/admin/login/route.js
+
+  POST /api/admin/login
+    Purpose: Authenticate admin user
+    Rate limit: 5 attempts per 15 minutes per IP
+
+    Request body:
+    { "password": "the-admin-password" }
+
+    Response 200:
+    { "success": true }
+    Sets cookie: session=<signed-token>; HttpOnly; Secure; SameSite=Strict; Max-Age=86400
+
+    Response 401:
+    { "error": "Incorrect password" }
+
+    Response 429:
+    { "error": "Too many login attempts. Try again in 15 minutes." }
+
+3.7 Admin Logout
+
+  File: /app/api/admin/logout/route.js
+
+  POST /api/admin/logout
+    Purpose: End admin session
+    Auth: session cookie required
+
+    Response 200:
+    { "success": true }
+    Clears cookie: session=; Max-Age=0
+
+
+4. AUTHENTICATION SYSTEM
+--------------------------------------------------------------------------------
+
+4.1 Overview
+  - Single admin user (no username, password only)
+  - Password stored in ADMIN_PASSWORD environment variable
+  - Session managed via signed JWT in HTTP-only cookie
+
+4.2 Auth Flow
+
+  Login:
+    1. Admin enters password on /admin/login
+    2. POST /api/admin/login with { password }
+    3. Server compares using crypto.timingSafeEqual (constant-time)
+    4. If match: generate JWT, set in HTTP-only cookie, return 200
+    5. If no match: increment attempt counter, return 401
+
+  Session Validation:
+    1. Every admin request includes session cookie automatically
+    2. Server extracts JWT from cookie
+    3. Verify JWT signature using SESSION_SECRET env var
+    4. Check expiration (24 hours)
+    5. If valid: proceed with request
+    6. If invalid/expired: return 401, redirect to login
+
+  Logout:
+    1. POST /api/admin/logout
+    2. Server clears session cookie (Max-Age=0)
+    3. Redirect to /admin/login
+
+4.3 Auth Implementation (/lib/auth.js)
+
+  Dependencies: jose (for JWT signing/verification)
+
+  Environment variables:
+    ADMIN_PASSWORD    — the admin login password
+    SESSION_SECRET    — random string for JWT signing (min 32 chars)
+
+  Functions:
+    verifyPassword(input)     → boolean (constant-time comparison)
+    createSession()           → JWT string (24h expiry)
+    verifySession(token)      → { valid: boolean }
+    getSessionFromCookies()   → token string or null
+
+4.4 Middleware (/middleware.js)
+
+  Next.js middleware runs on the edge before route handlers.
+
+  Protected routes:
+    - /admin (not /admin/login)
+    - /api/applications (GET only — POST is public)
+    - /api/applications/[id] (all methods)
+
+  Logic:
+    if (path matches protected route) {
+      token = get session cookie
+      if (!token || !verifySession(token)) {
+        if (API route) return 401 JSON response
+        if (page route) redirect to /admin/login
+      }
+    }
+
+
+5. RATE LIMITING
+--------------------------------------------------------------------------------
+
+5.1 Approach
+  Since Vercel serverless has no persistent memory between invocations,
+  rate limiting needs either:
+  (a) Database-backed rate limiting (store attempts in Postgres)
+  (b) Vercel KV (Redis) — requires additional setup
+  (c) Simple in-memory Map with caveats (resets on cold starts)
+
+  Recommendation for V1: Database-backed rate limiting
+
+5.2 Rate Limit Table
+
+  Table: rate_limits
+  ┌──────────────┬──────────────┬─────────────────────────┐
+  │ Column       │ Type         │ Constraints             │
+  ├──────────────┼──────────────┼─────────────────────────┤
+  │ id           │ SERIAL       │ PRIMARY KEY             │
+  │ ip_address   │ VARCHAR(45)  │ NOT NULL                │
+  │ endpoint     │ VARCHAR(100) │ NOT NULL                │
+  │ attempt_at   │ TIMESTAMP    │ DEFAULT NOW()           │
+  └──────────────┴──────────────┴─────────────────────────┘
+
+  Index: (ip_address, endpoint, attempt_at)
+
+5.3 Limits
+  POST /api/applications:   max 3 per hour per IP
+  POST /api/admin/login:    max 5 per 15 minutes per IP
+
+5.4 Implementation (/lib/rate-limit.js)
+
+  async function checkRateLimit(ip, endpoint, maxAttempts, windowMinutes) {
+    // Count recent attempts
+    // If over limit, return { limited: true, retryAfter: seconds }
+    // If under limit, record attempt, return { limited: false }
+    // Clean up old records periodically
+  }
+
+
+6. INPUT VALIDATION
+--------------------------------------------------------------------------------
+
+6.1 Server-Side Validation (/lib/validation.js)
+
+  Validate all fields on the server regardless of client-side validation.
+
+  Rules:
+    first_name:    required, string, max 100 chars, trim whitespace
+    last_name:     required, string, max 100 chars, trim whitespace
+    email:         required, valid email format (regex), max 255 chars
+    phone:         optional, max 20 chars, digits/hyphens/parens/spaces only
+    unit_preference: optional, must be from VALID_UNITS list or empty
+    move_in_date:  optional, valid date, must be today or later
+    lease_length:  optional, must be from VALID_LEASE_LENGTHS list
+    employer:      optional, max 200 chars
+    monthly_income: optional, must be from VALID_INCOME_RANGES list
+    current_address: optional, max 500 chars
+    landlord_name: optional, max 200 chars
+    landlord_phone: optional, same rules as phone
+    emergency_contact_name: optional, max 200 chars
+    emergency_contact_phone: optional, same rules as phone
+    additional_notes: optional, max 2000 chars
+
+  All string inputs: trim whitespace, escape HTML entities
+
+6.2 Allowed Values (from /lib/config.js)
+
+  VALID_UNITS = [
+    'Unit A', 'Unit B', 'Unit C', 'Unit D', 'No Preference'
+    // [REPLACE: actual unit names]
+  ]
+
+  VALID_LEASE_LENGTHS = [
+    'Month-to-month', '3 months', '6 months', '12 months'
+  ]
+
+  VALID_INCOME_RANGES = [
+    'Under $3,000', '$3,000 - $5,000', '$5,000 - $7,000',
+    '$7,000 - $10,000', '$10,000+'
+  ]
+
+
+7. ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+
+Required:
+  POSTGRES_URL          — Vercel Postgres connection string (auto-set by Vercel)
+  ADMIN_PASSWORD        — Password for admin dashboard login
+  SESSION_SECRET        — Random secret for JWT signing (min 32 chars)
+
+Optional:
+  NEXT_PUBLIC_MAP_LAT   — Property latitude for map (default: placeholder)
+  NEXT_PUBLIC_MAP_LNG   — Property longitude for map (default: placeholder)
+
+.env.example:
+  POSTGRES_URL=postgres://...
+  ADMIN_PASSWORD=change-this-to-your-password
+  SESSION_SECRET=generate-a-random-32-char-string-here
+  NEXT_PUBLIC_MAP_LAT=40.7128
+  NEXT_PUBLIC_MAP_LNG=-74.0060
+
+
+8. ERROR HANDLING
+--------------------------------------------------------------------------------
+
+8.1 API Error Response Format
+  All errors return JSON:
+  {
+    "error": "Human-readable error message",
+    "details": { ... }    // optional, for validation errors
+  }
+
+8.2 HTTP Status Codes Used
+  200 — Success
+  201 — Created (new application)
+  400 — Bad Request (validation failure)
+  401 — Unauthorized (no/invalid session)
+  404 — Not Found
+  429 — Too Many Requests (rate limited)
+  500 — Internal Server Error
+
+8.3 Error Handling Strategy
+  - All route handlers wrapped in try/catch
+  - Database errors → log to console, return 500 with generic message
+  - Validation errors → return 400 with specific field errors
+  - Auth errors → return 401
+  - Never expose stack traces or internal details to client
+
+
+9. FILE-BY-FILE BACKEND REFERENCE
+--------------------------------------------------------------------------------
+
+/lib/db.js
+  - initDB()
+  - createApplication(data)
+  - getApplications(status?)
+  - getApplication(id)
+  - updateApplicationStatus(id, status)
+  - deleteApplication(id)
+  - getStatusCounts()
+
+/lib/auth.js
+  - verifyPassword(input) → boolean
+  - createSession() → string (JWT)
+  - verifySession(token) → { valid: boolean }
+  - getSessionFromCookies(request) → string | null
+  - setSessionCookie(response, token)
+  - clearSessionCookie(response)
+
+/lib/validation.js
+  - validateApplication(data) → { valid: boolean, errors: {} }
+  - sanitizeInput(str) → string
+  - isValidEmail(email) → boolean
+
+/lib/rate-limit.js
+  - checkRateLimit(ip, endpoint, max, windowMins) → { limited, retryAfter? }
+  - cleanupOldRecords() → void
+
+/lib/config.js
+  - VALID_UNITS
+  - VALID_LEASE_LENGTHS
+  - VALID_INCOME_RANGES
+  - PROPERTY_CONFIG (name, address, coordinates, etc.)
+  - UNITS_DATA (array of unit objects)
+  - FAQ_DATA (array of Q&A objects)
+
+/middleware.js
+  - Route protection logic for /admin and /api/applications
+
+/app/api/applications/route.js
+  - POST handler (public — create application)
+  - GET handler (admin — list applications)
+
+/app/api/applications/[id]/route.js
+  - GET handler (admin — single application)
+  - PATCH handler (admin — update status)
+  - DELETE handler (admin — delete)
+
+/app/api/admin/login/route.js
+  - POST handler (login)
+
+/app/api/admin/logout/route.js
+  - POST handler (logout)
+
+/app/api/init/route.js
+  - GET handler (one-time DB initialization — remove after first run
+    or protect behind a setup secret)

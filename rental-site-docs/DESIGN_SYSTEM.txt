@@ -1,0 +1,300 @@
+================================================================================
+DESIGN SYSTEM
+Furnished Rental Property — Brochure Website & Renter Management System
+================================================================================
+
+1. DESIGN PRINCIPLES
+--------------------------------------------------------------------------------
+
+- TRUSTWORTHY: Clean, professional look that makes tenants feel confident
+- CLEAR: Information hierarchy guides the eye, nothing hidden or confusing
+- FAST: Minimal decorative elements, optimized images, fast load times
+- MOBILE-FIRST: Designed for phone screens first, enhanced for desktop
+- ACCESSIBLE: Meets WCAG 2.1 AA standards
+
+
+2. COLOR PALETTE
+--------------------------------------------------------------------------------
+
+Primary Colors:
+  --color-navy:          #1e3a5f    (Primary brand color — headers, nav, buttons)
+  --color-navy-dark:     #152a45    (Hover states, footer background)
+  --color-navy-light:    #2a4f7f    (Secondary elements)
+
+Accent Colors:
+  --color-amber:         #d97706    (CTAs, highlights, availability badges)
+  --color-amber-light:   #f59e0b    (Hover on accent buttons)
+  --color-amber-50:      #fffbeb    (Light amber background)
+
+Neutral Colors:
+  --color-white:         #ffffff    (Page background, card background)
+  --color-gray-50:       #f9fafb    (Alternating section backgrounds)
+  --color-gray-100:      #f3f4f6    (Input backgrounds, borders)
+  --color-gray-200:      #e5e7eb    (Dividers, table borders)
+  --color-gray-300:      #d1d5db    (Disabled states)
+  --color-gray-500:      #6b7280    (Secondary text, placeholders)
+  --color-gray-700:      #374151    (Body text)
+  --color-gray-900:      #111827    (Headings, primary text)
+
+Status Colors (Admin Dashboard):
+  --color-status-new:    #3b82f6    (Blue — new applications)
+  --color-status-review: #f59e0b    (Amber — under review)
+  --color-status-approved: #10b981  (Green — approved)
+  --color-status-rejected: #ef4444  (Red — rejected)
+
+Tailwind CSS Mapping:
+  Primary:   slate-800/900 or custom navy via tailwind.config.js
+  Accent:    amber-600 / amber-500
+  Neutrals:  gray-50 through gray-900
+  Status:    blue-500, amber-500, emerald-500, red-500
+
+
+3. TYPOGRAPHY
+--------------------------------------------------------------------------------
+
+Font Stack:
+  Primary:    Inter (Google Fonts) — clean, modern, highly readable
+  Fallback:   system-ui, -apple-system, sans-serif
+  Monospace:  'JetBrains Mono', monospace (code/technical only if needed)
+
+Type Scale:
+  Display (Hero):        text-5xl (3rem / 48px)     font-bold    leading-tight
+  H1 (Section Titles):   text-4xl (2.25rem / 36px)  font-bold    leading-tight
+  H2 (Subsections):      text-2xl (1.5rem / 24px)   font-semibold leading-snug
+  H3 (Card Titles):      text-xl  (1.25rem / 20px)  font-semibold leading-snug
+  Body Large:            text-lg  (1.125rem / 18px)  font-normal  leading-relaxed
+  Body:                  text-base (1rem / 16px)     font-normal  leading-relaxed
+  Body Small:            text-sm  (0.875rem / 14px)  font-normal  leading-normal
+  Caption:               text-xs  (0.75rem / 12px)   font-medium  leading-normal
+
+Mobile Adjustments:
+  Display:    text-3xl (1.875rem) on mobile
+  H1:         text-2xl (1.5rem) on mobile
+  H2:         text-xl (1.25rem) on mobile
+
+Color Usage:
+  Headings:   text-gray-900
+  Body text:  text-gray-700
+  Secondary:  text-gray-500
+  Links:      text-navy (--color-navy), underline on hover
+  On dark bg:  text-white or text-gray-100
+
+
+4. SPACING SYSTEM
+--------------------------------------------------------------------------------
+
+Base unit: 4px (Tailwind default)
+
+Component Spacing:
+  Section padding (vertical):  py-16 (64px) desktop, py-12 (48px) mobile
+  Section padding (horizontal): px-4 (16px) mobile, px-8 (32px) tablet, px-16 (64px) desktop
+  Container max-width:         max-w-6xl (72rem / 1152px), centered
+  Card padding:                p-6 (24px)
+  Card gap (in grid):          gap-6 (24px) desktop, gap-4 (16px) mobile
+  Between elements in card:    space-y-3 (12px)
+  Between sections:            my-0 (sections butt up, padding handles it)
+  Nav height:                  h-16 (64px)
+  Footer padding:              py-12 (48px)
+
+
+5. COMPONENT SPECIFICATIONS
+--------------------------------------------------------------------------------
+
+5.1 Navigation Bar
+  - Fixed to top, z-50
+  - Background: white with shadow-sm
+  - Height: h-16
+  - Logo/property name: left-aligned, font-semibold, text-navy
+  - Nav links: center or right, text-gray-700, hover:text-navy
+  - Active link: text-navy, font-medium, border-b-2 border-amber
+  - CTA button: "Apply Now" — amber background, white text, rounded-lg
+  - Mobile: hamburger icon → slide-out menu from right
+
+5.2 Hero Section
+  - Full viewport width, h-[70vh] min-h-[500px]
+  - Background: property photo with dark overlay (bg-black/40)
+  - Content: centered vertically and horizontally
+  - Title: text-white, Display size, font-bold
+  - Subtitle: text-gray-100, Body Large
+  - Buttons: row on desktop, stacked on mobile
+    - Primary: bg-amber-600 text-white px-8 py-3 rounded-lg text-lg
+    - Secondary: border-2 border-white text-white px-8 py-3 rounded-lg text-lg
+
+5.3 Section Headers
+  - Each section has:
+    - Small label: text-amber-600, text-sm, font-semibold, uppercase, tracking-wide
+    - Title: text-gray-900, H1, font-bold
+    - Optional subtitle: text-gray-500, Body Large
+  - Centered text alignment
+  - mb-12 below header before content
+
+5.4 Unit Cards
+  - Background: white
+  - Border: border border-gray-200
+  - Border radius: rounded-xl
+  - Shadow: shadow-sm, hover:shadow-md transition
+  - Image: top of card, rounded-t-xl, aspect-[4/3], object-cover
+  - Content padding: p-6
+  - Unit name: H3, text-gray-900
+  - Details: text-sm text-gray-500 (bed/bath · sqft)
+  - Features: text-sm text-gray-700, list with small dot bullets
+  - Price: text-2xl font-bold text-navy, mt-4
+  - Includes line: text-sm text-gray-500
+  - Availability badge: inline-block px-3 py-1 rounded-full text-xs font-medium
+    - Available: bg-emerald-100 text-emerald-700
+    - Coming Soon: bg-amber-100 text-amber-700
+    - Occupied: bg-gray-100 text-gray-500
+  - CTA: full-width button at bottom, bg-navy text-white py-2.5 rounded-lg
+
+5.5 FAQ Accordion
+  - Container: max-w-3xl mx-auto (narrower than full width for readability)
+  - Each item: border-b border-gray-200
+  - Question row: py-5 flex justify-between items-center cursor-pointer
+    - Text: font-medium text-gray-900
+    - Icon: plus/minus, text-gray-400, transition-transform
+  - Answer: text-gray-600, leading-relaxed, pb-5
+  - Animation: max-height transition, 200ms ease
+
+5.6 Application Form
+  - Card-style container: bg-white rounded-xl shadow-sm p-8 max-w-2xl mx-auto
+  - Section dividers: border-t border-gray-200 pt-6 mt-6
+  - Section labels: H3, text-gray-900, mb-4
+  - Input fields:
+    - Label: text-sm font-medium text-gray-700 mb-1
+    - Input: w-full px-4 py-2.5 border border-gray-300 rounded-lg
+             bg-white text-gray-900 placeholder:text-gray-400
+             focus:ring-2 focus:ring-navy/20 focus:border-navy
+    - Error: border-red-500, text-red-600 text-sm mt-1
+  - Submit button: w-full bg-amber-600 text-white py-3 rounded-lg text-lg
+                   font-semibold hover:bg-amber-500 disabled:bg-gray-300
+
+5.7 Admin Table
+  - Full-width table with horizontal scroll on mobile
+  - Header row: bg-gray-50 text-xs font-medium text-gray-500 uppercase
+  - Data rows: bg-white border-b border-gray-100
+  - Hover: bg-gray-50
+  - Status badge: same as availability badge style with status colors
+  - Actions: icon buttons (expand, delete) with tooltips
+  - Mobile: switch to card layout (no table)
+
+5.8 Status Badges
+  - Shared style: inline-flex items-center px-2.5 py-0.5 rounded-full
+                   text-xs font-medium
+  - New:       bg-blue-100 text-blue-700
+  - Reviewing:  bg-amber-100 text-amber-700
+  - Approved:   bg-emerald-100 text-emerald-700
+  - Rejected:   bg-red-100 text-red-700
+
+5.9 Buttons
+  Primary (CTA):
+    bg-amber-600 text-white px-6 py-2.5 rounded-lg font-medium
+    hover:bg-amber-500 transition-colors
+    focus:ring-2 focus:ring-amber-500/50 focus:outline-none
+
+  Secondary:
+    bg-navy text-white px-6 py-2.5 rounded-lg font-medium
+    hover:bg-navy-dark transition-colors
+
+  Ghost:
+    text-gray-700 px-4 py-2 rounded-lg
+    hover:bg-gray-100 transition-colors
+
+  Danger:
+    bg-red-600 text-white px-4 py-2 rounded-lg font-medium
+    hover:bg-red-500 transition-colors
+
+
+6. RESPONSIVE BREAKPOINTS
+--------------------------------------------------------------------------------
+
+  Mobile:   < 640px   (sm)   — single column, stacked layout
+  Tablet:   640-1023px (md)  — 2-column grids, side-by-side elements
+  Desktop:  1024px+    (lg)  — full layout, 3-column unit grid
+
+  Container: max-w-6xl mx-auto px-4 sm:px-6 lg:px-8
+
+  Unit grid:   grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+  Property:    flex-col md:flex-row (stacked → side by side)
+  Form:        single column always (max-w-2xl centered)
+  Admin table: table on desktop, cards on mobile (breakpoint: md)
+
+
+7. ICONOGRAPHY
+--------------------------------------------------------------------------------
+
+  Icon library: Lucide React (lucide-react package)
+  Default size: w-5 h-5 (20px)
+  Default color: currentColor (inherits text color)
+
+  Key icons:
+  - Navigation: Menu, X (hamburger)
+  - Location: MapPin, Navigation
+  - Property: Home, Bed, Bath, Maximize (sqft), Car (parking)
+  - Amenities: Wifi, WashingMachine, UtensilsCrossed, Snowflake (AC)
+  - FAQ: Plus, Minus (accordion)
+  - Form: Check, AlertCircle (validation)
+  - Admin: Filter, ChevronDown, Trash2, Eye, LogOut
+  - Status: Clock (new), Search (reviewing), CheckCircle (approved), XCircle (rejected)
+
+
+8. IMAGERY GUIDELINES
+--------------------------------------------------------------------------------
+
+  Property Photos:
+  - Aspect ratio: 4:3 for unit cards, 16:9 for hero
+  - Min resolution: 1200px wide
+  - Style: well-lit, warm, inviting — show furnished spaces
+  - Use Next.js Image component with lazy loading
+  - Provide width/height to prevent layout shift
+  - Format: WebP preferred, JPEG fallback
+
+  Floor Plan:
+  - Clear, labeled rooms
+  - High contrast (dark lines on white/light background)
+  - Clickable to enlarge (modal/lightbox)
+
+  Placeholder Images:
+  - Use neutral gray backgrounds with property icon
+  - Marked clearly: "[REPLACE: Unit 1 Photo]"
+
+
+9. ANIMATION & TRANSITIONS
+--------------------------------------------------------------------------------
+
+  Global transition: transition-all duration-200 ease-in-out
+
+  Specific animations:
+  - Nav scroll: background fades in when scrolled past hero
+  - FAQ accordion: max-height + opacity transition, 200ms
+  - Card hover: shadow transition, 200ms
+  - Button hover: background-color transition, 150ms
+  - Form validation: fade-in error messages, 150ms
+  - Page transitions: none (keep it simple for V1)
+  - Loading states: pulse animation on skeleton placeholders
+
+  No animations:
+  - No parallax scrolling
+  - No scroll-triggered animations
+  - No auto-playing carousels (use manual navigation only)
+
+
+10. TAILWIND CONFIG EXTENSIONS
+--------------------------------------------------------------------------------
+
+  // tailwind.config.js
+  module.exports = {
+    theme: {
+      extend: {
+        colors: {
+          navy: {
+            DEFAULT: '#1e3a5f',
+            dark: '#152a45',
+            light: '#2a4f7f',
+          },
+        },
+        fontFamily: {
+          sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        },
+      },
+    },
+  }

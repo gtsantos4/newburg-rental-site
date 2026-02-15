@@ -1,0 +1,348 @@
+================================================================================
+APP FLOW DOCUMENT
+Furnished Rental Property — Brochure Website & Renter Management System
+================================================================================
+
+1. SITE MAP
+--------------------------------------------------------------------------------
+
+/                       → Brochure home (single-page scrolling)
+  ├── #hero             → Hero section with CTAs
+  ├── #location         → Map and neighborhood info
+  ├── #property         → House description + floor plan
+  ├── #units            → Individual unit cards
+  ├── #faq              → Frequently asked questions
+  └── #apply            → How to apply + CTA to form
+
+/apply                  → Application form page
+
+/admin/login            → Admin login page
+/admin                  → Admin dashboard (protected)
+
+/api/applications       → REST endpoint (POST: create, GET: list)
+/api/applications/[id]  → REST endpoint (GET: detail, PATCH: update, DELETE)
+/api/admin/login        → Auth endpoint (POST)
+/api/admin/logout       → Auth endpoint (POST)
+
+
+2. TENANT FLOW (Primary User Journey)
+--------------------------------------------------------------------------------
+
+Step 1: Discovery
+  Furnished Finder Listing → Click website link → Arrive at / (hero section)
+
+Step 2: Explore Property
+  Hero → Scroll down (or use nav) → Browse sections in order:
+
+  [Location]
+  - View map, check distance to workplace
+  - Read about neighborhood amenities
+
+  [Property Overview]
+  - Read house description
+  - View floor plan
+  - Understand shared amenities
+
+  [Available Units]
+  - Browse unit cards
+  - Compare pricing and features
+  - Check availability status
+  - View unit photos
+
+Step 3: Get Questions Answered
+  [FAQ]
+  - Scan question list
+  - Click to expand relevant answers
+  - If question not covered → see contact info at bottom of FAQ
+
+Step 4: Decide to Apply
+  [How to Apply]
+  - Read step-by-step process
+  - Review required information
+  - Click "Start Your Application" → navigates to /apply
+
+Step 5: Submit Application
+  /apply page:
+  - Fill out personal information
+  - Select preferred unit
+  - Enter employment details
+  - Provide rental history
+  - Add emergency contact
+  - Optional: additional notes
+  - Click "Submit Application"
+
+  On success → See confirmation message:
+    "Your application has been received! We typically review applications
+     within 24-48 hours. You'll hear from us at [their email]."
+
+  On error → See error message with option to retry
+
+Step 6: Wait for Response
+  (Owner reviews application via admin dashboard, contacts tenant directly
+   via email or phone provided in application)
+
+
+3. ADMIN FLOW (Property Owner Journey)
+--------------------------------------------------------------------------------
+
+Step 1: Login
+  Navigate to /admin/login
+  - Enter admin password
+  - Click "Log In"
+  - On success → redirect to /admin
+  - On failure → show error, stay on login page
+
+Step 2: Review Applications
+  /admin dashboard:
+  - See table of all applications
+  - "New" badge count shows unreviewed applications
+  - Default view: sorted by date, newest first
+  - Filter tabs: All | New | Reviewing | Approved | Rejected
+
+Step 3: View Application Detail
+  - Click on any row → expands inline to show full application
+  - All fields displayed in organized sections:
+    - Contact info
+    - Unit preference & move-in details
+    - Employment
+    - Rental history
+    - Emergency contact
+    - Notes
+
+Step 4: Process Application
+  From detail view:
+  - Change status: new → reviewing (when starting review)
+  - Change status: reviewing → approved OR rejected (after review)
+  - Status change is instant, no save button needed
+  - Contact applicant externally (via email/phone from application)
+
+Step 5: Manage Applications
+  - Delete spam or old applications (with confirmation)
+  - Filter to see only specific statuses
+  - Review multiple applications in sequence
+
+Step 6: Logout
+  - Click "Logout" in admin nav
+  - Redirected to /admin/login
+
+
+4. PAGE-BY-PAGE INTERACTION DETAILS
+--------------------------------------------------------------------------------
+
+4.1 Brochure Home Page (/)
+
+  Navigation Bar (fixed at top):
+  - Property name/logo (left)
+  - Nav links: Location | Property | Units | FAQ | Apply (center/right)
+  - "Apply Now" button (right, accent color)
+  - On mobile: hamburger menu → slide-out nav
+  - Nav links scroll to corresponding section with smooth scroll
+  - Active section highlighted in nav as user scrolls
+
+  Hero Section:
+  - Full-width background image
+  - Overlay with property name, tagline, and two buttons:
+    - "View Available Units" → smooth scroll to #units
+    - "Apply Now" → navigate to /apply
+
+  Location Section:
+  - Interactive Leaflet map (zoom, pan enabled)
+  - Map marker on property location
+  - Popup on marker click: property name + address
+  - Below map: grid of nearby POIs with icons and distances
+
+  Property Section:
+  - Two-column layout: text left, floor plan image right
+  - On mobile: stacked (text on top, image below)
+  - Floor plan image: click to open full-size in lightbox/modal
+  - Amenities displayed as icon grid
+
+  Units Section:
+  - Responsive card grid (1 col mobile, 2 col tablet, 3 col desktop)
+  - Each card:
+    - Photo at top (if 2 photos: simple left/right carousel)
+    - Unit name, bed/bath, sqft below photo
+    - Feature list (bulleted, short)
+    - Price prominently displayed
+    - "What's included" line
+    - Availability badge (color-coded)
+    - "Apply for This Unit" button → /apply?unit=[unit-id]
+
+  FAQ Section:
+  - Accordion: question visible, click to expand answer
+  - Only one answer open at a time (clicking new one closes previous)
+  - Plus/minus icon indicates expand/collapse state
+  - Smooth animation on expand/collapse
+
+  How to Apply Section:
+  - Numbered steps (1-2-3 format with icons)
+  - "What you'll need" checklist
+  - Large CTA button: "Start Your Application"
+
+  Footer:
+  - Property name
+  - Contact email
+  - Contact phone
+  - Small legal text / fair housing notice
+
+4.2 Application Form Page (/apply)
+
+  Header:
+  - Back link: "← Back to Property Info" → /
+  - Page title: "Rental Application"
+
+  Form Layout:
+  - Organized into collapsible/visible sections:
+    Section 1: Personal Information
+      - First Name* (text)
+      - Last Name* (text)
+      - Email* (email)
+      - Phone* (tel)
+
+    Section 2: Unit & Move-In Preferences
+      - Unit Preference (select dropdown, populated from unit list + "No Preference")
+      - Desired Move-In Date (date picker, optional)
+      - Lease Length Preference (select: Month-to-month, 3 months, 6 months, 12 months)
+
+    Section 3: Employment & Income
+      - Employer Name (text)
+      - Monthly Income Range (select: Under $3,000, $3,000 - $5,000, $5,000 - $7,000, $7,000 - $10,000, $10,000+)
+
+    Section 4: Current Housing
+      - Current Address (textarea)
+      - Current Landlord Name (text)
+      - Current Landlord Phone (tel)
+
+    Section 5: Emergency Contact
+      - Emergency Contact Name (text)
+      - Emergency Contact Phone (tel)
+
+    Section 6: Additional Information
+      - Notes / Anything Else (textarea, optional)
+
+  Validation:
+  - Real-time validation as user types (after first blur)
+  - Required fields marked with *
+  - Invalid fields: red border + error message below field
+  - Submit button disabled until all required fields valid
+  - On submit: loading spinner on button, form fields disabled
+
+  After Submission:
+  - Success: form replaced with confirmation card
+    - Checkmark icon
+    - "Application Received!"
+    - "We'll review your application and get back to you at [email]
+       within 24-48 hours."
+    - "Back to Property Info" link
+  - Error: toast/banner at top of form
+    - "Something went wrong. Please try again."
+    - Form remains filled so user doesn't lose data
+    - Submit button re-enabled
+
+4.3 Admin Login (/admin/login)
+
+  Layout:
+  - Centered card on page
+  - Property name at top
+  - Password field
+  - "Log In" button
+  - Error message space (shows on wrong password)
+
+  Behavior:
+  - POST to /api/admin/login with password
+  - On success: set cookie, redirect to /admin
+  - On failure: show "Incorrect password" message
+  - 5 failed attempts in 15 minutes: show "Too many attempts, try again later"
+
+4.4 Admin Dashboard (/admin)
+
+  Layout:
+  - Top bar: "Admin Dashboard" title + "Logout" button
+  - Below top bar: filter tabs with counts
+  - Main area: applications table
+
+  Filter Tabs:
+  - All (total count)
+  - New (count, highlighted if > 0)
+  - Reviewing (count)
+  - Approved (count)
+  - Rejected (count)
+
+  Table Columns:
+  - Name (first + last)
+  - Unit Preference
+  - Date Submitted (formatted: "Feb 15, 2026")
+  - Status (color badge)
+  - Actions (expand / delete)
+
+  Row Expansion:
+  - Click row → expands below to show full application
+  - All fields organized in a clean layout
+  - Status dropdown to change status
+  - "Delete Application" button (red, shows confirmation)
+
+  Empty State:
+  - "No applications yet" message when table is empty
+  - Per-filter empty state: "No [status] applications"
+
+  Mobile:
+  - Table becomes card layout on mobile
+  - Each application is a card with key info
+  - Tap to expand full details
+
+
+5. ERROR STATES & EDGE CASES
+--------------------------------------------------------------------------------
+
+Application Form:
+- Network error on submit → "Unable to submit. Check your connection and try again."
+- Server error (500) → "Something went wrong on our end. Please try again later."
+- Duplicate submission prevention: disable button after first click, show spinner
+- Browser back after submission → show confirmation page (not re-submit)
+
+Admin Dashboard:
+- Session expired → redirect to login with "Session expired" message
+- Delete fails → "Unable to delete. Please try again."
+- Status update fails → revert dropdown, show error toast
+- Empty database → "No applications yet" with friendly illustration/icon
+
+General:
+- 404 page → friendly message + link back to home
+- Slow connection → loading skeletons on admin data fetch
+- JavaScript disabled → brochure content still readable (SSR/static)
+
+
+6. NAVIGATION DIAGRAM
+--------------------------------------------------------------------------------
+
+                    Furnished Finder
+                          |
+                          v
+                    / (Brochure Home)
+                    |
+          +---------+---------+---------+---------+---------+
+          |         |         |         |         |         |
+       #location #property  #units    #faq    #apply      |
+                              |                   |        |
+                              |                   v        |
+                              +-----------> /apply <-------+
+                                              |
+                                              v
+                                     [Submit Application]
+                                              |
+                                              v
+                                     Confirmation Screen
+
+
+                    /admin/login
+                          |
+                          v
+                    /admin (Dashboard)
+                          |
+                    +-----+-----+
+                    |           |
+               View/Filter  Expand Detail
+                              |
+                         +----+----+
+                         |         |
+                    Change Status  Delete

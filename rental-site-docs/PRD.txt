@@ -1,0 +1,241 @@
+================================================================================
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+Furnished Rental Property — Brochure Website & Renter Management System
+================================================================================
+
+1. OVERVIEW
+--------------------------------------------------------------------------------
+Product Name: [REPLACE: Your Property Name] Rental Site
+Product Type: Brochure website + tenant application management backend
+Target Platform: Web (mobile-responsive), deployed on Vercel
+Tech Stack: Next.js 14 (App Router), Tailwind CSS, Vercel Postgres, Leaflet.js
+
+Purpose:
+Prospective tenants discover the property on Furnished Finder, then visit this
+website to get all their questions answered without needing to message the
+property owner. The site serves as a self-service information hub and
+application funnel.
+
+2. TARGET USERS
+--------------------------------------------------------------------------------
+
+Primary: Prospective Tenants (Travel Nurses / Furnished Finder Audience)
+- Travel nurses on 13-week assignments looking for furnished housing
+- Traveling professionals (consultants, contractors, relocating workers)
+- Need quick answers: pricing, availability, location, amenities, lease terms
+- Decision-making factors: proximity to hospital/workplace, furnished quality,
+  all-inclusive pricing, flexible lease terms, move-in simplicity
+- Tech comfort: moderate — need a simple, clear, mobile-friendly experience
+
+Secondary: Property Owner/Manager (Admin)
+- Single admin user (the property owner)
+- Needs to review incoming applications quickly
+- Needs to track application status (new → reviewing → approved/rejected)
+- Accesses admin dashboard from phone or desktop
+
+3. USER STORIES
+--------------------------------------------------------------------------------
+
+Prospective Tenant:
+- As a tenant, I want to see the property location on a map so I can check
+  proximity to my workplace.
+- As a tenant, I want to see a floor plan so I understand the layout before
+  visiting.
+- As a tenant, I want to read a clear description of the house and shared
+  amenities so I know what's included.
+- As a tenant, I want to see individual unit details (photos, price, features)
+  so I can pick the right one.
+- As a tenant, I want to read an FAQ so I don't have to message the owner for
+  common questions.
+- As a tenant, I want to understand the application process before I start.
+- As a tenant, I want to fill out an application online so I can apply quickly.
+- As a tenant, I want confirmation that my application was received.
+
+Property Owner:
+- As the owner, I want to see all applications in one place.
+- As the owner, I want to filter applications by status.
+- As the owner, I want to change an application's status as I process it.
+- As the owner, I want to delete old or spam applications.
+- As the owner, I want the admin area password-protected.
+
+4. FUNCTIONAL REQUIREMENTS
+--------------------------------------------------------------------------------
+
+4.1 Brochure Website (Public)
+
+FR-01: Hero Section
+- Full-width hero image with property name and tagline
+- Primary CTA button: "View Available Units" (scrolls to units section)
+- Secondary CTA: "Apply Now" (links to /apply)
+
+FR-02: Location Section
+- Embedded OpenStreetMap via Leaflet showing property location
+- Property address displayed
+- List of nearby points of interest:
+  - Nearest hospital(s) with distance
+  - Public transit access
+  - Grocery stores
+  - Restaurants/entertainment
+  - [REPLACE: Other relevant landmarks]
+
+FR-03: Property Overview Section
+- House description (type, year, size, general vibe)
+- Shared amenities list (kitchen, laundry, parking, outdoor space, etc.)
+- Floor plan image(s) — clickable to view full-size
+
+FR-04: Units Section
+- Card-based layout, one card per unit (3-5 units)
+- Each card displays:
+  - Unit name/identifier
+  - 1-2 photos (carousel if 2)
+  - Bedroom/bathroom count
+  - Square footage
+  - Key features (private entrance, en-suite bath, etc.)
+  - Monthly price
+  - What's included in price (utilities, internet, furnishings, etc.)
+  - Availability status badge: Available / Coming Soon [date] / Occupied
+
+FR-05: FAQ Section
+- Accordion-style expandable Q&A
+- Minimum 15 questions covering:
+  - Lease terms and flexibility
+  - What's included (utilities, internet, furnishings)
+  - Move-in requirements and costs
+  - Parking
+  - Pet policy
+  - Guest policy
+  - Laundry
+  - Mail/packages
+  - Cleaning expectations
+  - Early termination
+  - Application timeline
+  - Background/credit check info
+  - Smoking policy
+  - Quiet hours / house rules
+  - How to contact owner for questions not covered
+
+FR-06: How to Apply Section
+- Step-by-step numbered process
+- List of documents/info needed to apply
+- Expected timeline (application → approval)
+- CTA button: "Start Your Application" → /apply
+
+FR-07: Application Form (/apply page)
+- Sections:
+  a) Personal Information: first name, last name, email, phone
+  b) Desired Unit: dropdown of available units + "No preference"
+  c) Move-in Details: desired move-in date, lease length preference
+  d) Employment: employer name, monthly income range
+  e) Current Housing: current address, landlord name & phone
+  f) Emergency Contact: name, phone
+  g) Additional Notes: free-text field
+- Client-side validation:
+  - Required fields: first name, last name, email, phone
+  - Email format validation
+  - Phone format validation
+  - Move-in date must be in the future
+- On submit: POST to /api/applications
+- Success state: confirmation message with expected response timeline
+- Error state: clear error message with retry option
+
+4.2 Admin Dashboard (Protected)
+
+FR-08: Admin Authentication
+- Login page at /admin/login
+- Single password (set via ADMIN_PASSWORD environment variable)
+- On successful login: set HTTP-only session cookie
+- Session expires after 24 hours
+- All /admin routes redirect to login if not authenticated
+
+FR-09: Applications List View
+- Table with columns: Name, Unit Preference, Date Submitted, Status, Actions
+- Status filter tabs: All | New | Reviewing | Approved | Rejected
+- Badge showing count of "New" applications
+- Sort by date (newest first by default)
+- Click row to expand full application detail inline
+
+FR-10: Application Detail View
+- All submitted fields displayed in readable format
+- Current status with color-coded badge
+- Status change dropdown
+- Delete button with confirmation modal
+
+FR-11: Application Status Management
+- Statuses: new, reviewing, approved, rejected
+- Status change via dropdown on detail view or list view
+- Status changes are immediate (no save button needed)
+
+FR-12: Application Deletion
+- Delete button on each application
+- Confirmation modal: "Are you sure you want to delete this application?"
+- Deletion is permanent
+
+5. NON-FUNCTIONAL REQUIREMENTS
+--------------------------------------------------------------------------------
+
+NFR-01: Performance
+- Brochure page loads in < 3 seconds on 3G connection
+- Lighthouse performance score > 85
+- Images optimized (Next.js Image component with lazy loading)
+
+NFR-02: Responsiveness
+- Fully functional on mobile (360px+), tablet (768px+), desktop (1024px+)
+- Touch-friendly tap targets (min 44px)
+- Readable without zooming on mobile
+
+NFR-03: Accessibility
+- Semantic HTML throughout
+- ARIA labels on interactive elements
+- Keyboard navigable
+- Color contrast ratio ≥ 4.5:1
+- Alt text on all images
+
+NFR-04: SEO
+- Proper meta tags (title, description, OG tags)
+- Semantic heading hierarchy
+- Sitemap generation
+
+NFR-05: Security
+- Admin routes protected by authentication
+- HTTP-only cookies for session management
+- Input sanitization on all form fields
+- Rate limiting on application submission endpoint
+- CSRF protection on form submission
+- Environment variables for all secrets
+
+NFR-06: Data Privacy
+- Application data stored in Vercel Postgres (encrypted at rest)
+- No third-party analytics without disclosure
+- No sharing of applicant data
+
+6. SUCCESS METRICS
+--------------------------------------------------------------------------------
+
+- Reduction in direct messages from Furnished Finder (qualitative)
+- Application completion rate (applications submitted / page visits)
+- Time from listing view to application submission
+- Admin time spent per application review
+
+7. OUT OF SCOPE (V1)
+--------------------------------------------------------------------------------
+
+- Online payment / deposit collection
+- Lease signing / e-signatures
+- Tenant portal (post-move-in)
+- Multi-user admin access
+- Email notifications on new applications (can add in V2)
+- Calendar/scheduling for property tours
+- Chat widget
+- Multi-language support
+
+8. FUTURE CONSIDERATIONS (V2+)
+--------------------------------------------------------------------------------
+
+- Email notification when new application is submitted
+- SMS notification option
+- Automated email to applicant on status change
+- Document upload on application (ID, pay stubs)
+- Lease template generation
+- Payment integration for deposits
+- Tenant portal for current tenants
+- Analytics dashboard (page views, conversion rates)
