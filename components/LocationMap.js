@@ -22,15 +22,15 @@ export default function LocationMap() {
     import('leaflet').then((L) => {
       const { lat, lng } = PROPERTY_CONFIG.coordinates;
 
-      const map = L.map(mapRef.current).setView([lat, lng], 15);
+      const map = L.map(mapRef.current).setView([lat, lng], 12);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }).addTo(map);
 
-      // Custom marker
-      const icon = L.divIcon({
+      // Property marker (amber/home icon)
+      const propertyIcon = L.divIcon({
         html: `<div style="background:#d97706;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         </div>`,
@@ -40,11 +40,38 @@ export default function LocationMap() {
         popupAnchor: [0, -32],
       });
 
-      L.marker([lat, lng], { icon })
+      L.marker([lat, lng], { icon: propertyIcon })
         .addTo(map)
         .bindPopup(
           `<strong>${PROPERTY_CONFIG.name}</strong><br/>${PROPERTY_CONFIG.address}`
         );
+
+      // Nearby place markers (gray pin)
+      const placeIcon = L.divIcon({
+        html: `<div style="background:#6b7280;width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+        className: '',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        popupAnchor: [0, -24],
+      });
+
+      const bounds = L.latLngBounds([[lat, lng]]);
+
+      PROPERTY_CONFIG.nearbyPlaces.forEach((place) => {
+        if (place.lat != null && place.lng != null) {
+          const marker = L.marker([place.lat, place.lng], { icon: placeIcon })
+            .addTo(map)
+            .bindPopup(
+              `<strong>${place.name}</strong><br/>${place.address || ''}`
+            );
+          bounds.extend([place.lat, place.lng]);
+        }
+      });
+
+      // Fit map to show all markers with padding
+      if (PROPERTY_CONFIG.nearbyPlaces.some((p) => p.lat != null)) {
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
+      }
 
       mapInstanceRef.current = map;
     });
@@ -96,7 +123,10 @@ export default function LocationMap() {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{place.name}</p>
-                      <p className="text-sm text-gray-500">{place.distance}</p>
+                      {place.address && (
+                        <p className="text-sm text-gray-500">{place.address}</p>
+                      )}
+                      <p className="text-sm text-gray-400">{place.distance}</p>
                     </div>
                   </div>
                 );
