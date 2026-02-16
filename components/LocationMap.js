@@ -29,9 +29,9 @@ export default function LocationMap() {
         maxZoom: 19,
       }).addTo(map);
 
-      // Property marker (amber/home icon)
+      // Property marker (accent/home icon)
       const propertyIcon = L.divIcon({
-        html: `<div style="background:#d97706;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
+        html: `<div style="background:#4a7c59;width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         </div>`,
         className: '',
@@ -89,7 +89,7 @@ export default function LocationMap() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <p className="text-amber-600 text-sm font-semibold uppercase tracking-wide mb-2">
+          <p className="text-accent text-sm font-semibold uppercase tracking-wide mb-2">
             Location
           </p>
           <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -118,8 +118,8 @@ export default function LocationMap() {
                 const Icon = typeIcons[place.type] || MapPin;
                 return (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-5 h-5 text-amber-600" />
+                    <div className="w-10 h-10 rounded-lg bg-accent-50 flex items-center justify-center flex-shrink-0">
+                      <Icon className="w-5 h-5 text-accent" />
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{place.name}</p>

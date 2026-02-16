@@ -65,7 +65,7 @@ export default function Navbar() {
                 href={link.href}
                 className={`text-sm font-medium transition-colors ${
                   activeSection === link.href.replace('#', '')
-                    ? 'text-navy border-b-2 border-amber-500 pb-0.5'
+                    ? 'text-navy border-b-2 border-accent pb-0.5'
                     : 'text-gray-700 hover:text-navy'
                 }`}
               >
@@ -74,7 +74,7 @@ export default function Navbar() {
             ))}
             <a
               href="/apply"
-              className="bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-amber-500 transition-colors"
+              className="bg-accent text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-accent-600 transition-colors"
             >
               Apply Now
             </a>
@@ -108,7 +108,7 @@ export default function Navbar() {
             <a
               href="/apply"
               onClick={handleNavClick}
-              className="block bg-amber-600 text-white text-center px-5 py-2.5 rounded-lg font-medium hover:bg-amber-500 transition-colors"
+              className="block bg-accent text-white text-center px-5 py-2.5 rounded-lg font-medium hover:bg-accent-600 transition-colors"
             >
               Apply Now
             </a>

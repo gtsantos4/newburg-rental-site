@@ -9,7 +9,7 @@ export default function HowToApply() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <p className="text-amber-600 text-sm font-semibold uppercase tracking-wide mb-2">
+          <p className="text-accent text-sm font-semibold uppercase tracking-wide mb-2">
             How to Apply
           </p>
           <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -26,10 +26,10 @@ export default function HowToApply() {
             const Icon = stepIcons[i] || FileText;
             return (
               <div key={i} className="text-center">
-                <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                  <Icon className="w-7 h-7 text-amber-600" />
+                <div className="w-16 h-16 rounded-full bg-accent-50 flex items-center justify-center mx-auto mb-4">
+                  <Icon className="w-7 h-7 text-accent" />
                 </div>
-                <div className="text-sm font-semibold text-amber-600 mb-1">
+                <div className="text-sm font-semibold text-accent mb-1">
                   Step {step.number}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -62,7 +62,7 @@ export default function HowToApply() {
         <div className="text-center">
           <a
             href="/apply"
-            className="inline-flex items-center gap-2 bg-amber-600 text-white px-8 py-3.5 rounded-lg text-lg font-semibold hover:bg-amber-500 transition-colors"
+            className="inline-flex items-center gap-2 bg-accent text-white px-8 py-3.5 rounded-lg text-lg font-semibold hover:bg-accent-600 transition-colors"
           >
             Start Your Application
             <ArrowRight className="w-5 h-5" />

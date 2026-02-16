@@ -499,7 +499,7 @@ export default function ApplicationForm() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-amber-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-amber-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-accent text-white py-3 rounded-lg text-lg font-semibold hover:bg-accent-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>

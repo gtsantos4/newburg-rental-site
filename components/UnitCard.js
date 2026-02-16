@@ -6,7 +6,7 @@ import { Bed, Bath, Maximize, ChevronLeft, ChevronRight, Home } from 'lucide-rea
 function AvailabilityBadge({ availability, availableDate }) {
   const styles = {
     available: 'bg-emerald-100 text-emerald-700',
-    'coming-soon': 'bg-amber-100 text-amber-700',
+    'coming-soon': 'bg-accent-100 text-accent-700',
     occupied: 'bg-gray-100 text-gray-500',
   };
 
@@ -123,7 +123,7 @@ export default function UnitCard({ unit }) {
         <ul className="space-y-1.5 mb-4 flex-grow">
           {unit.features.map((feature, i) => (
             <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-              <span className="text-amber-500 mt-1.5 flex-shrink-0">&#8226;</span>
+              <span className="text-accent mt-1.5 flex-shrink-0">&#8226;</span>
               {feature}
             </li>
           ))}

@@ -30,7 +30,7 @@ export default function PropertySection() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <p className="text-amber-600 text-sm font-semibold uppercase tracking-wide mb-2">
+          <p className="text-accent text-sm font-semibold uppercase tracking-wide mb-2">
             The Property
           </p>
           <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3">
@@ -87,7 +87,7 @@ export default function PropertySection() {
                   <p className="text-gray-400 text-sm mt-1">
                     Add floorplan.png to /public/images/
                   </p>
-                  <p className="text-amber-600 text-sm mt-3 font-medium">
+                  <p className="text-accent text-sm mt-3 font-medium">
                     Click to enlarge
                   </p>
                 </div>
