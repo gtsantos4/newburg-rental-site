@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" width="800" height="520">
+  <defs>
+    <!-- Subtle shadow for depth -->
+    <filter id="shadow" x="-5%" y="-5%" width="115%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.15"/>
+    </filter>
+    <!-- Board-and-batten pattern -->
+    <pattern id="batten" x="0" y="0" width="24" height="10" patternUnits="userSpaceOnUse">
+      <rect width="24" height="10" fill="#9e9e98"/>
+      <line x1="12" y1="0" x2="12" y2="10" stroke="#8f8f89" stroke-width="1.5"/>
+    </pattern>
+    <!-- Gable batten pattern (vertical lines on the triangle) -->
+    <pattern id="battenGable" x="0" y="0" width="24" height="10" patternUnits="userSpaceOnUse">
+      <rect width="24" height="10" fill="#9e9e98"/>
+      <line x1="12" y1="0" x2="12" y2="10" stroke="#8f8f89" stroke-width="1.5"/>
+    </pattern>
+    <!-- Window glass gradient -->
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c8dce8"/>
+      <stop offset="100%" stop-color="#a3bfcf"/>
+    </linearGradient>
+    <linearGradient id="glassDoor" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#d0e4ee"/>
+      <stop offset="100%" stop-color="#a8c8d8"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- ============ MAIN BODY ============ -->
+    <!-- Main rectangular body -->
+    <rect x="200" y="210" width="400" height="240" fill="url(#batten)" stroke="#888" stroke-width="0.5"/>
+
+    <!-- White trim - bottom -->
+    <rect x="196" y="446" width="408" height="6" fill="#f0ece6" rx="1"/>
+    <!-- White trim - left edge of main body -->
+    <rect x="196" y="210" width="6" height="240" fill="#f0ece6"/>
+    <!-- White trim - right edge of main body -->
+    <rect x="598" y="210" width="6" height="240" fill="#f0ece6"/>
+
+    <!-- White corner boards (vertical white strips at main body corners) -->
+    <rect x="200" y="210" width="8" height="236" fill="#f0ece6"/>
+    <rect x="592" y="210" width="8" height="236" fill="#f0ece6"/>
+
+    <!-- ============ GABLE / ROOF ============ -->
+    <!-- Gable triangle (the wall inside the peaked roof) -->
+    <polygon points="400,80 200,210 600,210" fill="url(#battenGable)" stroke="#888" stroke-width="0.5"/>
+
+    <!-- White trim on gable edges -->
+    <line x1="400" y1="76" x2="195" y2="210" stroke="#f0ece6" stroke-width="7" stroke-linecap="round"/>
+    <line x1="400" y1="76" x2="605" y2="210" stroke="#f0ece6" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- Dark roof overhang lines (the black metal roof edge) -->
+    <line x1="400" y1="72" x2="185" y2="212" stroke="#2d2d2d" stroke-width="5" stroke-linecap="round"/>
+    <line x1="400" y1="72" x2="615" y2="212" stroke="#2d2d2d" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Horizontal eave line across top of main body -->
+    <line x1="185" y1="212" x2="615" y2="212" stroke="#2d2d2d" stroke-width="4"/>
+
+    <!-- ============ LEFT PORCH / CARPORT ============ -->
+    <!-- Porch roof (lean-to, sloping outward to the left) -->
+    <polygon points="200,212 60,280 60,284 200,216" fill="#2d2d2d"/>
+    <!-- Porch roof underside -->
+    <polygon points="200,216 60,284 60,290 200,222" fill="#3d3d3d" opacity="0.4"/>
+
+    <!-- Left porch columns -->
+    <rect x="68" y="284" width="8" height="162" fill="#f0ece6" rx="1"/>
+    <rect x="134" y="256" width="8" height="190" fill="#f0ece6" rx="1"/>
+
+    <!-- Porch floor/base line -->
+    <line x1="60" y1="446" x2="200" y2="446" stroke="#d0ccc4" stroke-width="3"/>
+
+    <!-- ============ RIGHT PORCH / CARPORT ============ -->
+    <!-- Porch roof (lean-to, sloping outward to the right) -->
+    <polygon points="600,212 740,280 740,284 600,216" fill="#2d2d2d"/>
+    <!-- Porch roof underside -->
+    <polygon points="600,216 740,284 740,290 600,222" fill="#3d3d3d" opacity="0.4"/>
+
+    <!-- Right porch columns -->
+    <rect x="724" y="284" width="8" height="162" fill="#f0ece6" rx="1"/>
+    <rect x="658" y="256" width="8" height="190" fill="#f0ece6" rx="1"/>
+
+    <!-- Porch floor/base line -->
+    <line x1="600" y1="446" x2="740" y2="446" stroke="#d0ccc4" stroke-width="3"/>
+
+    <!-- ============ UPPER GABLE WINDOW ============ -->
+    <!-- Window frame -->
+    <rect x="372" y="130" width="56" height="52" fill="#f0ece6" rx="2"/>
+    <!-- Glass panes (2x2 grid) -->
+    <rect x="376" y="134" width="23" height="21" fill="url(#glass)" rx="1"/>
+    <rect x="401" y="134" width="23" height="21" fill="url(#glass)" rx="1"/>
+    <rect x="376" y="157" width="23" height="21" fill="url(#glass)" rx="1"/>
+    <rect x="401" y="157" width="23" height="21" fill="url(#glass)" rx="1"/>
+    <!-- Muntins -->
+    <line x1="400" y1="134" x2="400" y2="178" stroke="#f0ece6" stroke-width="2"/>
+    <line x1="376" y1="155.5" x2="424" y2="155.5" stroke="#f0ece6" stroke-width="2"/>
+
+    <!-- ============ CENTER FRONT DOOR ============ -->
+    <!-- Door frame (white trim) -->
+    <rect x="368" y="310" width="64" height="136" fill="#f0ece6" rx="1"/>
+    <!-- Door - left panel -->
+    <rect x="372" y="314" width="28" height="128" fill="url(#glassDoor)" rx="1"/>
+    <!-- Door - right panel -->
+    <rect x="402" y="314" width="28" height="128" fill="url(#glassDoor)" rx="1"/>
+    <!-- Door muntins (vertical center) -->
+    <line x1="400" y1="314" x2="400" y2="442" stroke="#f0ece6" stroke-width="3"/>
+    <!-- Door horizontal muntin -->
+    <line x1="372" y1="380" x2="428" y2="380" stroke="#f0ece6" stroke-width="1.5" opacity="0.6"/>
+    <!-- Transom above door -->
+    <rect x="368" y="296" width="64" height="16" fill="#f0ece6" rx="1"/>
+    <rect x="372" y="299" width="56" height="10" fill="url(#glass)" rx="1"/>
+    <!-- Transom dividers -->
+    <line x1="391" y1="299" x2="391" y2="309" stroke="#f0ece6" stroke-width="1.5"/>
+    <line x1="409" y1="299" x2="409" y2="309" stroke="#f0ece6" stroke-width="1.5"/>
+
+    <!-- ============ MAIN BODY WINDOWS ============ -->
+    <!-- Left inner window -->
+    <rect x="262" y="320" width="58" height="52" fill="#f0ece6" rx="2"/>
+    <rect x="266" y="324" width="50" height="44" fill="url(#glass)" rx="1"/>
+    <line x1="291" y1="324" x2="291" y2="368" stroke="#f0ece6" stroke-width="2"/>
+    <line x1="266" y1="346" x2="316" y2="346" stroke="#f0ece6" stroke-width="1.5"/>
+
+    <!-- Right inner window -->
+    <rect x="480" y="320" width="58" height="52" fill="#f0ece6" rx="2"/>
+    <rect x="484" y="324" width="50" height="44" fill="url(#glass)" rx="1"/>
+    <line x1="509" y1="324" x2="509" y2="368" stroke="#f0ece6" stroke-width="2"/>
+    <line x1="484" y1="346" x2="534" y2="346" stroke="#f0ece6" stroke-width="1.5"/>
+
+    <!-- Left outer window (closer to left porch) -->
+    <rect x="216" y="320" width="34" height="52" fill="#f0ece6" rx="2"/>
+    <rect x="220" y="324" width="26" height="44" fill="url(#glass)" rx="1"/>
+    <line x1="233" y1="324" x2="233" y2="368" stroke="#f0ece6" stroke-width="1.5"/>
+
+    <!-- Right outer window (closer to right porch) -->
+    <rect x="550" y="320" width="34" height="52" fill="#f0ece6" rx="2"/>
+    <rect x="554" y="324" width="26" height="44" fill="url(#glass)" rx="1"/>
+    <line x1="567" y1="324" x2="567" y2="368" stroke="#f0ece6" stroke-width="1.5"/>
+
+    <!-- ============ LEFT PORCH GLASS DOOR ============ -->
+    <!-- The left porch has a glass door visible on the front face -->
+    <rect x="100" y="316" width="50" height="130" fill="#f0ece6" rx="1"/>
+    <rect x="104" y="320" width="42" height="122" fill="url(#glassDoor)" rx="1"/>
+    <line x1="125" y1="320" x2="125" y2="442" stroke="#f0ece6" stroke-width="2"/>
+    <line x1="104" y1="382" x2="146" y2="382" stroke="#f0ece6" stroke-width="1.5" opacity="0.6"/>
+
+    <!-- ============ FOUNDATION LINE ============ -->
+    <line x1="55" y1="450" x2="745" y2="450" stroke="#c8c4bc" stroke-width="2"/>
+  </g>
+</svg>
